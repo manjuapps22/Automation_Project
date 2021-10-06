@@ -51,3 +51,23 @@ if [ $(dpkg --list | grep awscli | cut -d ' ' -f 3 | head -1) == 'awscli' ]
 	s3://${s3_bucket}/${myname}-httpd-logs-${timestamp}.tar
 
 fi
+
+inventory_file="/var/www/html/inventory.html"
+if [ -f "$inventory_file" ]; then
+        echo "$inventory_file file already exists."
+else
+        echo "Creating $inventory_file placeholder file..."
+        echo "<b>Log Type &nbsp;&nbsp;&nbsp;&nbsp; Date Created &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Type &nbsp;&nbsp;&nbsp;&nbsp; Size</b><br>" > $inventory_file
+fi
+archive_size=`du -hs /tmp/$myname-httpd-logs-$timestamp.tar | awk  '{print $1}'`
+echo "<br>httpd-logs &nbsp;&nbsp;&nbsp; ${timestamp} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tar &nbsp;&nbsp;&nbsp; ${archive_size}" >> $inventory_file
+echo "Inventory File Written with Archive Logs details."
+
+
+if [ -f "/etc/cron.d/automation" ];
+then
+	echo "Automation script in place for Daily 00:00 hrs"
+else
+	touch /etc/cron.d/automation
+	printf "0 0 * * * root bash /root/Automation_Project/auotmation.sh" > /etc/cron.d/automation
+fi
